@@ -167,7 +167,10 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        
+
+        // 設定を格納する変数
+        let config = null;
+
         // ゲーム状態
         let gameState = {
             score: 0,
@@ -177,8 +180,8 @@
             stunTimer: 0
         };
 
-        // プレイヤー
-        const player = {
+        // プレイヤー（初期値、config読み込み後に上書き）
+        let player = {
             x: 400,
             y: 480,
             width: 40,
@@ -191,8 +194,8 @@
             groundY: 480
         };
 
-        // 投げる人
-        const thrower = {
+        // 投げる人（初期値、config読み込み後に上書き）
+        let thrower = {
             x: 400,
             y: 360,
             width: 40,
@@ -202,6 +205,34 @@
 
         // アイテム配列
         let items = [];
+
+        // config.jsonを読み込む
+        async function loadConfig() {
+            try {
+                const response = await fetch('config.json');
+                config = await response.json();
+
+                // プレイヤー設定を適用
+                player.width = config.characters.player.width;
+                player.height = config.characters.player.height;
+                player.speed = config.characters.player.speed;
+                player.jumpPower = config.characters.player.jumpPower;
+                player.gravity = config.characters.player.gravity;
+                player.groundY = config.characters.player.groundY;
+                player.y = config.characters.player.groundY;
+
+                // 投げる人設定を適用
+                thrower.x = config.characters.thrower.x;
+                thrower.y = config.characters.thrower.y;
+                thrower.width = config.characters.thrower.width;
+                thrower.height = config.characters.thrower.height;
+
+                console.log('Config loaded successfully:', config);
+            } catch (error) {
+                console.error('Failed to load config.json:', error);
+                alert('設定ファイルの読み込みに失敗しました。');
+            }
+        }
 
         // キー入力
         const keys = {};
@@ -283,6 +314,8 @@
 
         // 投げる人を描画（絵文字使用）
         function drawThrower() {
+            if (!config) return;
+
             // 投げるアニメーション
             const armOffset = Math.max(0, thrower.throwAnimation);
 
@@ -291,10 +324,10 @@
             const throwY = thrower.y - armOffset * 3;
 
             ctx.globalAlpha = 1;  // 不透明
-            ctx.font = '50px Arial';
+            ctx.font = `${config.characters.thrower.fontSize}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('👨‍🍳', throwX, throwY);
+            ctx.fillText(config.characters.thrower.emoji, throwX, throwY);
 
             // アニメーション減衰
             if (thrower.throwAnimation > 0) {
@@ -304,11 +337,15 @@
 
         // プレイヤーを描画（絵文字使用）
         function drawPlayer() {
+            if (!config) return;
+
             // スタン中は苦しい表情、通常時は通常の表情
-            const emoji = gameState.isStunned ? '😵' : '🧑';
+            const emoji = gameState.isStunned ?
+                config.characters.player.stunned :
+                config.characters.player.normal;
 
             ctx.globalAlpha = 1;  // 常に不透明
-            ctx.font = '60px Arial';
+            ctx.font = `${config.characters.player.fontSize}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
             ctx.fillText(emoji, player.x, player.y + 30);
@@ -316,47 +353,61 @@
 
         // 唐揚げを描画（絵文字使用）
         function drawKaraage(x, y, size) {
+            if (!config) return;
+
             ctx.globalAlpha = 1;  // 不透明
-            ctx.font = `${size * 3.2}px Arial`;  // 1.6倍に拡大 (2 * 1.6 = 3.2)
+            ctx.font = `${size * config.items.karaage.fontSizeMultiplier}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('🍗', x, y);
+            ctx.fillText(config.items.karaage.emoji, x, y);
         }
 
         // レモンを描画（絵文字使用）
         function drawLemon(x, y, size) {
+            if (!config) return;
+
             ctx.globalAlpha = 1;  // 不透明
-            ctx.font = `${size * 3.2}px Arial`;  // 1.6倍に拡大 (2 * 1.6 = 3.2)
+            ctx.font = `${size * config.items.lemon.fontSizeMultiplier}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('🍋', x, y);
+            ctx.fillText(config.items.lemon.emoji, x, y);
         }
 
         // アイテムを生成（一回で4つ投げる）
         function createItem() {
+            if (!config) return;
+
             // 投げる人の位置から投げる
             const startX = thrower.x;
             const startY = thrower.y + 30;
-            
+
             // 投げるアニメーションをトリガー
             thrower.throwAnimation = 1;
-            
-            // 4つのアイテムを投げる
-            for (let i = 0; i < 4; i++) {
-                const type = Math.random() < 0.9 ? 'karaage' : 'lemon'; // 90%唐揚げ、10%レモン
-                
+
+            // 設定からアイテム数と投げ方を取得
+            const itemsPerThrow = config.throwing.itemsPerThrow;
+            const karaageRate = config.items.karaage.spawnRate;
+
+            // アイテムを投げる
+            for (let i = 0; i < itemsPerThrow; i++) {
+                const type = Math.random() < karaageRate ? 'karaage' : 'lemon';
+
                 // ランダムな方向に投げる（左右に広がるように）
-                const angle = -50 - Math.random() * 80; // -50度から-130度の範囲
-                const power = 7 + Math.random() * 5; // 投げる力
-                
+                const angleRange = config.throwing.angleMax - config.throwing.angleMin;
+                const angle = config.throwing.angleMin - Math.random() * angleRange;
+                const powerRange = config.throwing.powerMax - config.throwing.powerMin;
+                const power = config.throwing.powerMin + Math.random() * powerRange;
+
+                const itemConfig = type === 'karaage' ? config.items.karaage : config.items.lemon;
+
                 items.push({
                     x: startX,
                     y: startY,
                     type: type,
                     velocityX: Math.cos(angle * Math.PI / 180) * power,
                     velocityY: Math.sin(angle * Math.PI / 180) * power,
-                    gravity: 0.3,
-                    size: 15
+                    gravity: itemConfig.gravity,
+                    size: itemConfig.baseSize
                 });
             }
         }
@@ -408,6 +459,8 @@
 
         // アイテム更新
         function updateItems() {
+            if (!config) return;
+
             for (let i = items.length - 1; i >= 0; i--) {
                 // 放物運動を適用
                 items[i].velocityY += items[i].gravity;
@@ -417,11 +470,11 @@
                 // 衝突判定
                 if (checkCollision(items[i])) {
                     if (items[i].type === 'karaage') {
-                        gameState.score++;
+                        gameState.score += config.items.karaage.points;
                         document.getElementById('score').textContent = gameState.score;
                     } else if (items[i].type === 'lemon') {
                         gameState.isStunned = true;
-                        gameState.stunTimer = 2;
+                        gameState.stunTimer = config.items.lemon.stunDuration;
                         document.getElementById('stunIndicator').style.display = 'block';
                     }
                     items.splice(i, 1);
@@ -561,6 +614,8 @@
 
         // ゲーム再開
         function restartGame() {
+            if (!config) return;
+
             gameState = {
                 score: 0,
                 timeLeft: 60,
@@ -568,31 +623,39 @@
                 isStunned: false,
                 stunTimer: 0
             };
-            
+
             player.x = 400;
-            player.y = 480;
+            player.y = config.characters.player.groundY;
             player.velocityY = 0;
             player.isJumping = false;
-            
+
             thrower.throwAnimation = 0;
-            
+
             items = [];
             gameTime = 0;
             lastItemTime = 0;
-            
+
             document.getElementById('score').textContent = '0';
             document.getElementById('timeLeft').textContent = '60';
             document.getElementById('timerBarFill').style.width = '100%';
             document.getElementById('gameOver').style.display = 'none';
             document.getElementById('stunIndicator').style.display = 'none';
-            
+
             gameLoop();
             updateTimer();
         }
 
+        // 初期化処理：configを読み込んでからゲームを開始
+        async function initGame() {
+            await loadConfig();
+            if (config) {
+                gameLoop();
+                updateTimer();
+            }
+        }
+
         // ゲーム開始
-        gameLoop();
-        updateTimer();
+        initGame();
     </script>
 </body>
 </html>
