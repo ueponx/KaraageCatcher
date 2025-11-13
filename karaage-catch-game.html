@@ -164,12 +164,15 @@
         </div>
     </div>
 
+    <!-- ゲーム設定ファイルを読み込み -->
+    <script src="config.js"></script>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // 設定を格納する変数
-        let config = null;
+        // 設定を格納する変数（config.jsから読み込み）
+        const config = gameConfig;
 
         // ゲーム状態
         let gameState = {
@@ -206,32 +209,24 @@
         // アイテム配列
         let items = [];
 
-        // config.jsonを読み込む
-        async function loadConfig() {
-            try {
-                const response = await fetch('config.json');
-                config = await response.json();
+        // 設定を初期化（config.jsから読み込んだ値を適用）
+        function initConfig() {
+            // プレイヤー設定を適用
+            player.width = config.characters.player.width;
+            player.height = config.characters.player.height;
+            player.speed = config.characters.player.speed;
+            player.jumpPower = config.characters.player.jumpPower;
+            player.gravity = config.characters.player.gravity;
+            player.groundY = config.characters.player.groundY;
+            player.y = config.characters.player.groundY;
 
-                // プレイヤー設定を適用
-                player.width = config.characters.player.width;
-                player.height = config.characters.player.height;
-                player.speed = config.characters.player.speed;
-                player.jumpPower = config.characters.player.jumpPower;
-                player.gravity = config.characters.player.gravity;
-                player.groundY = config.characters.player.groundY;
-                player.y = config.characters.player.groundY;
+            // 投げる人設定を適用
+            thrower.x = config.characters.thrower.x;
+            thrower.y = config.characters.thrower.y;
+            thrower.width = config.characters.thrower.width;
+            thrower.height = config.characters.thrower.height;
 
-                // 投げる人設定を適用
-                thrower.x = config.characters.thrower.x;
-                thrower.y = config.characters.thrower.y;
-                thrower.width = config.characters.thrower.width;
-                thrower.height = config.characters.thrower.height;
-
-                console.log('Config loaded successfully:', config);
-            } catch (error) {
-                console.error('Failed to load config.json:', error);
-                alert('設定ファイルの読み込みに失敗しました。');
-            }
+            console.log('Config initialized:', config);
         }
 
         // キー入力
@@ -645,17 +640,10 @@
             updateTimer();
         }
 
-        // 初期化処理：configを読み込んでからゲームを開始
-        async function initGame() {
-            await loadConfig();
-            if (config) {
-                gameLoop();
-                updateTimer();
-            }
-        }
-
         // ゲーム開始
-        initGame();
+        initConfig();
+        gameLoop();
+        updateTimer();
     </script>
 </body>
 </html>
