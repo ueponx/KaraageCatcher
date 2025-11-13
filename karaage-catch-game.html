@@ -290,6 +290,7 @@
             const throwX = thrower.x + armOffset * 5;
             const throwY = thrower.y - armOffset * 3;
 
+            ctx.globalAlpha = 1;  // 不透明
             ctx.font = '50px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -303,20 +304,20 @@
 
         // プレイヤーを描画（絵文字使用）
         function drawPlayer() {
-            const opacity = gameState.isStunned ? 0.5 : 1;
-            ctx.globalAlpha = opacity;
+            // スタン中は苦しい表情、通常時は通常の表情
+            const emoji = gameState.isStunned ? '😵' : '🧑';
 
+            ctx.globalAlpha = 1;  // 常に不透明
             ctx.font = '60px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
-            ctx.fillText('🧑', player.x, player.y + 30);
-
-            ctx.globalAlpha = 1;
+            ctx.fillText(emoji, player.x, player.y + 30);
         }
 
         // 唐揚げを描画（絵文字使用）
         function drawKaraage(x, y, size) {
-            ctx.font = `${size * 2}px Arial`;
+            ctx.globalAlpha = 1;  // 不透明
+            ctx.font = `${size * 3.2}px Arial`;  // 1.6倍に拡大 (2 * 1.6 = 3.2)
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('🍗', x, y);
@@ -324,7 +325,8 @@
 
         // レモンを描画（絵文字使用）
         function drawLemon(x, y, size) {
-            ctx.font = `${size * 2}px Arial`;
+            ctx.globalAlpha = 1;  // 不透明
+            ctx.font = `${size * 3.2}px Arial`;  // 1.6倍に拡大 (2 * 1.6 = 3.2)
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('🍋', x, y);
