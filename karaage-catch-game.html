@@ -317,7 +317,7 @@
         // 唐揚げを描画（絵文字使用）
         function drawKaraage(x, y, size) {
             ctx.globalAlpha = 1;  // 不透明
-            ctx.font = `${size * 2}px Arial`;
+            ctx.font = `${size * 3.2}px Arial`;  // 1.6倍に拡大 (2 * 1.6 = 3.2)
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('🍗', x, y);
@@ -326,7 +326,7 @@
         // レモンを描画（絵文字使用）
         function drawLemon(x, y, size) {
             ctx.globalAlpha = 1;  // 不透明
-            ctx.font = `${size * 2}px Arial`;
+            ctx.font = `${size * 3.2}px Arial`;  // 1.6倍に拡大 (2 * 1.6 = 3.2)
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('🍋', x, y);
