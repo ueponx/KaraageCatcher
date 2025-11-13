@@ -221,149 +221,113 @@
 
         document.getElementById('restartBtn').addEventListener('click', restartGame);
 
-        // 鳥居を描画
+        // 鳥居を描画（グラデーションと影付き）
         function drawTorii() {
-            ctx.fillStyle = '#D2691E';
-            
-            // 柱（左）- 高さ240ピクセル
+            // 影を描画
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(205, 535, 18, 10);  // 左柱の影
+            ctx.fillRect(585, 535, 18, 10);  // 右柱の影
+
+            // 柱のグラデーション
+            const pillarGradient = ctx.createLinearGradient(200, 0, 220, 0);
+            pillarGradient.addColorStop(0, '#A0522D');
+            pillarGradient.addColorStop(0.5, '#D2691E');
+            pillarGradient.addColorStop(1, '#8B4513');
+
+            // 柱（左）
+            ctx.fillStyle = pillarGradient;
             ctx.fillRect(200, 280, 20, 240);
-            // 柱（右）
+
+            // 柱（右）- 同じグラデーション
+            const pillarGradient2 = ctx.createLinearGradient(580, 0, 600, 0);
+            pillarGradient2.addColorStop(0, '#A0522D');
+            pillarGradient2.addColorStop(0.5, '#D2691E');
+            pillarGradient2.addColorStop(1, '#8B4513');
+            ctx.fillStyle = pillarGradient2;
             ctx.fillRect(580, 280, 20, 240);
-            
-            // 上の横木
+
+            // 横木のグラデーション
+            const beamGradient = ctx.createLinearGradient(0, 260, 0, 275);
+            beamGradient.addColorStop(0, '#D2691E');
+            beamGradient.addColorStop(0.5, '#CD853F');
+            beamGradient.addColorStop(1, '#8B4513');
+
+            // 上の横木（太）
+            ctx.fillStyle = beamGradient;
             ctx.fillRect(180, 260, 440, 15);
+
+            // 上の横木（細）
+            const topBeamGradient = ctx.createLinearGradient(0, 250, 0, 260);
+            topBeamGradient.addColorStop(0, '#CD853F');
+            topBeamGradient.addColorStop(1, '#A0522D');
+            ctx.fillStyle = topBeamGradient;
             ctx.fillRect(170, 250, 460, 10);
-            
+
             // 下の横木
+            const bottomBeamGradient = ctx.createLinearGradient(0, 310, 0, 322);
+            bottomBeamGradient.addColorStop(0, '#D2691E');
+            bottomBeamGradient.addColorStop(1, '#8B4513');
+            ctx.fillStyle = bottomBeamGradient;
             ctx.fillRect(190, 310, 420, 12);
-            
-            // 装飾
+
+            // 装飾（端の飾り）
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(185, 265, 10, 10);
             ctx.fillRect(605, 265, 10, 10);
+
+            // ハイライト追加（光の当たる部分）
+            ctx.fillStyle = 'rgba(255, 228, 181, 0.3)';
+            ctx.fillRect(202, 282, 8, 200);  // 左柱のハイライト
+            ctx.fillRect(582, 282, 8, 200);  // 右柱のハイライト
         }
 
-        // 投げる人を描画
+        // 投げる人を描画（絵文字使用）
         function drawThrower() {
-            // 頭
-            ctx.fillStyle = '#FFD1A3';
-            ctx.beginPath();
-            ctx.arc(thrower.x, thrower.y, 15, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 体
-            ctx.fillStyle = '#FF6B6B';
-            ctx.fillRect(thrower.x - 12, thrower.y + 10, 24, 30);
-            
             // 投げるアニメーション
             const armOffset = Math.max(0, thrower.throwAnimation);
-            
-            // 腕（投げるポーズ）
-            ctx.strokeStyle = '#FF6B6B';
-            ctx.lineWidth = 6;
-            
-            // 左腕
-            ctx.beginPath();
-            ctx.moveTo(thrower.x - 12, thrower.y + 15);
-            ctx.lineTo(thrower.x - 25, thrower.y + 5);
-            ctx.stroke();
-            
-            // 右腕（投げる腕）
-            ctx.beginPath();
-            ctx.moveTo(thrower.x + 12, thrower.y + 15);
-            ctx.lineTo(thrower.x + 25 - armOffset * 10, thrower.y + 25 - armOffset * 30);
-            ctx.stroke();
-            
+
+            // アニメーションに応じて少し動かす
+            const throwX = thrower.x + armOffset * 5;
+            const throwY = thrower.y - armOffset * 3;
+
+            ctx.font = '50px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('👨‍🍳', throwX, throwY);
+
             // アニメーション減衰
             if (thrower.throwAnimation > 0) {
                 thrower.throwAnimation -= 0.1;
             }
         }
 
-        // プレイヤーを描画
+        // プレイヤーを描画（絵文字使用）
         function drawPlayer() {
             const opacity = gameState.isStunned ? 0.5 : 1;
             ctx.globalAlpha = opacity;
-            
-            // 頭
-            ctx.fillStyle = '#FFD1A3';
-            ctx.beginPath();
-            ctx.arc(player.x, player.y - 45, 15, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 体
-            ctx.fillStyle = '#4169E1';
-            ctx.fillRect(player.x - 15, player.y - 30, 30, 35);
-            
-            // 腕
-            ctx.strokeStyle = '#4169E1';
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.moveTo(player.x - 15, player.y - 25);
-            ctx.lineTo(player.x - 25, player.y - 10);
-            ctx.stroke();
-            
-            ctx.beginPath();
-            ctx.moveTo(player.x + 15, player.y - 25);
-            ctx.lineTo(player.x + 25, player.y - 10);
-            ctx.stroke();
-            
-            // 足
-            ctx.beginPath();
-            ctx.moveTo(player.x - 5, player.y + 5);
-            ctx.lineTo(player.x - 10, player.y + 25);
-            ctx.stroke();
-            
-            ctx.beginPath();
-            ctx.moveTo(player.x + 5, player.y + 5);
-            ctx.lineTo(player.x + 10, player.y + 25);
-            ctx.stroke();
-            
+
+            ctx.font = '60px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('🧑', player.x, player.y + 30);
+
             ctx.globalAlpha = 1;
         }
 
-        // 唐揚げを描画
+        // 唐揚げを描画（絵文字使用）
         function drawKaraage(x, y, size) {
-            ctx.fillStyle = '#D2691E';
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // ハイライト
-            ctx.fillStyle = '#F4A460';
-            ctx.beginPath();
-            ctx.arc(x - size/3, y - size/3, size/3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 細かい凹凸
-            ctx.fillStyle = '#8B4513';
-            for (let i = 0; i < 3; i++) {
-                const angle = (Math.PI * 2 * i) / 3;
-                const dx = Math.cos(angle) * size * 0.6;
-                const dy = Math.sin(angle) * size * 0.6;
-                ctx.fillRect(x + dx - 2, y + dy - 2, 3, 3);
-            }
+            ctx.font = `${size * 2}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🍗', x, y);
         }
 
-        // レモンを描画
+        // レモンを描画（絵文字使用）
         function drawLemon(x, y, size) {
-            ctx.fillStyle = '#FFD700';
-            ctx.beginPath();
-            ctx.ellipse(x, y, size, size * 1.3, Math.PI / 4, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // ハイライト
-            ctx.fillStyle = '#FFED4E';
-            ctx.beginPath();
-            ctx.ellipse(x - size/3, y - size/3, size/3, size/2, Math.PI / 4, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 輪郭
-            ctx.strokeStyle = '#FFA500';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.ellipse(x, y, size, size * 1.3, Math.PI / 4, 0, Math.PI * 2);
-            ctx.stroke();
+            ctx.font = `${size * 2}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🍋', x, y);
         }
 
         // アイテムを生成（一回で4つ投げる）
@@ -466,19 +430,65 @@
             }
         }
 
+        // 雲を描画
+        function drawClouds() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+
+            // 雲1
+            ctx.beginPath();
+            ctx.arc(150, 100, 30, 0, Math.PI * 2);
+            ctx.arc(180, 100, 40, 0, Math.PI * 2);
+            ctx.arc(210, 100, 30, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 雲2
+            ctx.beginPath();
+            ctx.arc(550, 150, 35, 0, Math.PI * 2);
+            ctx.arc(585, 150, 45, 0, Math.PI * 2);
+            ctx.arc(620, 150, 35, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 雲3
+            ctx.beginPath();
+            ctx.arc(350, 80, 25, 0, Math.PI * 2);
+            ctx.arc(375, 80, 35, 0, Math.PI * 2);
+            ctx.arc(400, 80, 25, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
         // 描画
         function draw() {
-            // 背景クリア
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // 空のグラデーション
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, 400);
+            skyGradient.addColorStop(0, '#87CEEB');
+            skyGradient.addColorStop(0.5, '#B0E2FF');
+            skyGradient.addColorStop(1, '#E0F6FF');
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, 800, 400);
 
-            // 地面
+            // 雲を描画
+            drawClouds();
+
+            // 地面のグラデーション
+            const groundGradient = ctx.createLinearGradient(0, 400, 0, 600);
+            groundGradient.addColorStop(0, '#90EE90');
+            groundGradient.addColorStop(0.4, '#7CCD7C');
+            groundGradient.addColorStop(1, '#6B8E23');
+            ctx.fillStyle = groundGradient;
+            ctx.fillRect(0, 400, 800, 200);
+
+            // 土の層
             ctx.fillStyle = '#8B7355';
             ctx.fillRect(0, 540, 800, 60);
 
-            // 草
-            ctx.fillStyle = '#228B22';
-            for (let i = 0; i < 800; i += 20) {
-                ctx.fillRect(i, 535, 10, 10);
+            // より詳細な草
+            for (let i = 0; i < 800; i += 15) {
+                // 草の高さをランダムに
+                const grassHeight = 8 + Math.sin(i * 0.1) * 3;
+                ctx.fillStyle = '#228B22';
+                ctx.fillRect(i, 535 - grassHeight, 8, grassHeight + 10);
+                ctx.fillStyle = '#32CD32';
+                ctx.fillRect(i + 3, 535 - grassHeight + 2, 3, grassHeight + 5);
             }
 
             // 鳥居
